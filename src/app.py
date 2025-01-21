@@ -11,9 +11,32 @@ from datastructures import FamilyStructure
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 CORS(app)
-
-# create the jackson family object
 jackson_family = FamilyStructure("Jackson")
+
+Michael = {
+    "first_name": "Michael",
+    "last_name": jackson_family.last_name,
+    "age": 30,
+    "lucky_numbers": [5,15]
+}
+
+Janet = {
+    "first_name": "Janet",
+    "last_name": jackson_family.last_name,
+    "age": 28,
+    "lucky_numbers": [3,23]
+}
+
+Tito = {
+    "first_name": "Tito",
+    "last_name": jackson_family.last_name,
+    "age": 45,
+    "lucky_numbers": [4,54]
+}
+
+jackson_family.add_member(Michael)
+jackson_family.add_member(Janet)
+jackson_family.add_member(Tito)
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -26,17 +49,33 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route('/members', methods=['GET'])
-def handle_hello():
-
-    # this is how you can use the Family datastructure by calling its methods
+def get_all_members():
     members = jackson_family.get_all_members()
-    response_body = {
-        "hello": "world",
-        "family": members
-    }
+    return jsonify(members), 200
 
+@app.route('/member/<int:id>', methods=['GET'])
+def get_one_member(id):
+    member = jackson_family.get_member(id)
+    return jsonify(member), 200
 
-    return jsonify(response_body), 200
+@app.route('/member', methods=['POST'])
+def generate_member():
+    member = request.json
+    print("added", member)
+    jackson_family.add_member(member)
+    if member is not None:
+        return "Member created successfully", 200
+    
+@app.route('/member/<int:id>', methods=['DELETE'])
+def delete_one_member(id):
+    member = jackson_family.get_member(id)
+
+    if member:
+        jackson_family.delete_member(id)
+        return jsonify({"message": "Member deleted successfully: {member}"}), 200
+    else:
+        return jsonify({"error": "Member not found"}), 404
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
