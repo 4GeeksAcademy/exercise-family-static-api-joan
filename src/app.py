@@ -59,22 +59,28 @@ def get_one_member(id):
     return jsonify(member), 200
 
 @app.route('/member', methods=['POST'])
-def generate_member():
+def create_member():
     member = request.json
-    print("added", member)
     jackson_family.add_member(member)
     if member is not None:
-        return "Member created successfully", 200
-    
+        return {
+            "member": member,
+            "message": "Member created successfully"
+        }, 200
+
 @app.route('/member/<int:id>', methods=['DELETE'])
 def delete_one_member(id):
     member = jackson_family.get_member(id)
-
     if member:
         jackson_family.delete_member(id)
-        return jsonify({"message": "Member deleted successfully: {member}"}), 200
+        return {
+            "member": member,
+            "message": "Member deleted successfully"
+            }, 200
     else:
-        return jsonify({"error": "Member not found"}), 404
+        return jsonify({
+            "error": "Member not found"
+            }), 404
 
 
 # this only runs if `$ python src/app.py` is executed
